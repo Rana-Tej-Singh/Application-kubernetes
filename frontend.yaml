@@ -1,0 +1,42 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+   name: frontend
+   labels:
+     app: webapp
+spec:
+  minReadySeconds: 10             # wait for 10 seconds to ready pods
+  replicas: 5                     # 5 replica of Pods.
+  selector:                       # Match with pod template labels
+     matchLabels:
+       version: latest
+       app: frontend
+       enabled: true
+  template:                       # Pod template begins
+     metadata:
+        name: frontend
+        labels:          
+          version: latest
+          app: frontend
+          enabled: true
+     spec:
+       terminationGracePeriodSeconds: 150
+       containers:
+         - image: nginx:alpine
+           name: frontend
+           ports:
+           - containerPort: 80
+             name: http
+           lifecycle:                # Execute set of command before container up
+             postStop:
+               exec:
+                 command:
+                   - touch
+                   - /tmp/ready
+           readinessProbe:             # Default 10s, periodically checks readiness state.
+              exec:
+                command:
+                  - ls
+                  - /tmp/ready
+           
+  
